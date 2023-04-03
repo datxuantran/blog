@@ -12,39 +12,41 @@ import { Route, Routes, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
 
+import apiRequest from "./api/axios";
+import EditPost from "./EditPage";
+
 const App = () => {
-  const [posts, setPosts] = useState([
-    {
-      id: 1,
-      title: "My First Post",
-      datetime: "July 01, 2021 11:17:36 AM",
-      body: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quis consequatur expedita, assumenda similique non optio! Modi nesciunt excepturi corrupti atque blanditiis quo nobis, non optio quae possimus illum exercitationem ipsa!",
-    },
-    {
-      id: 2,
-      title: "My 2nd Post",
-      datetime: "July 01, 2021 11:17:36 AM",
-      body: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quis consequatur expedita, assumenda similique non optio! Modi nesciunt excepturi corrupti atque blanditiis quo nobis, non optio quae possimus illum exercitationem ipsa!",
-    },
-    {
-      id: 3,
-      title: "My 3rd Post",
-      datetime: "July 01, 2021 11:17:36 AM",
-      body: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quis consequatur expedita, assumenda similique non optio! Modi nesciunt excepturi corrupti atque blanditiis quo nobis, non optio quae possimus illum exercitationem ipsa!",
-    },
-    {
-      id: 4,
-      title: "My Fourth Post",
-      datetime: "July 01, 2021 11:17:36 AM",
-      body: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quis consequatur expedita, assumenda similique non optio! Modi nesciunt excepturi corrupti atque blanditiis quo nobis, non optio quae possimus illum exercitationem ipsa!",
-    },
-  ]);
+  const [posts, setPosts] = useState([]);
   const [search, setSearch] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [postTitle, setPostTitle] = useState("");
   const [postBody, setPostBody] = useState("");
+  const [editTitle, setEditTitle] = useState("");
+  const [editBody, setEditBody] = useState("");
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchAPI = async () => {
+      try {
+        const response = await apiRequest.get("/posts");
+        setPosts(response.data);
+      } catch (error) {
+        if (error.response) {
+          // The request was made and the server responded with a status code
+          // that falls out of the range of 2xx
+          console.log(error.response.data);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+        } else {
+          // Something happened in setting up the request that triggered an Error
+          console.log("Error", error.message);
+        }
+      }
+    };
+
+    fetchAPI();
+  }, []);
 
   useEffect(() => {
     const filteredResults = posts.filter(
@@ -55,25 +57,84 @@ const App = () => {
     setSearchResults(filteredResults.reverse());
   }, [posts, search]);
 
-  const handleDelete = (id) => {
-    setPosts(posts.filter((post) => post.id !== id));
-    navigate("/");
+  const handleEdit = async (id) => {
+    try {
+      const date = format(new Date(), "MMMM dd, yyyy pp");
+      const editedPost = {
+        id: id,
+        datetime: date,
+        title: editTitle,
+        body: editBody,
+      };
+
+      setPosts([...posts.filter(post => post.id !== id), editedPost]);
+      setEditTitle("");
+      setEditBody("");
+      navigate("/");
+
+      await apiRequest.put(`/posts/${id}`, editedPost);
+    } catch (error) {
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.log(error.response.data);
+        console.log(error.response.status);
+        console.log(error.response.headers);
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.log("Error", error.message);
+      }
+    }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const id = posts.length ? posts[posts.length - 1].id + 1 : 1;
-    const date = format(new Date(), "MMMM dd, yyyy pp");
-    const newPost = {
-      id: id,
-      datetime: date,
-      title: postTitle,
-      body: postBody,
-    };
-    setPosts([...posts, newPost]);
-    setPostTitle("");
-    setPostBody("");
-    navigate("/");
+  const handleDelete = async (id) => {
+    try {
+      await apiRequest.delete(`/posts/${id}`);
+      setPosts(posts.filter((post) => post.id !== id));
+      navigate("/");
+    } catch (error) {
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.log(error.response.data);
+        console.log(error.response.status);
+        console.log(error.response.headers);
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.log("Error", error.message);
+      }
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    try {
+      e.preventDefault();
+      const id = posts.length ? posts[posts.length - 1].id + 1 : 1;
+      const date = format(new Date(), "MMMM dd, yyyy pp");
+      const newPost = {
+        id: id,
+        datetime: date,
+        title: postTitle,
+        body: postBody,
+      };
+      setPosts([...posts, newPost]);
+      setPostTitle("");
+      setPostBody("");
+      navigate("/");
+
+      await apiRequest.post(`/posts`, newPost);
+    } catch (error) {
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.log(error.response.data);
+        console.log(error.response.status);
+        console.log(error.response.headers);
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.log("Error", error.message);
+      }
+    }
   };
 
   return (
@@ -98,7 +159,26 @@ const App = () => {
         <Route
           exact
           path="/post/:id"
-          element={<PostPage posts={posts} handleDelete={handleDelete} />}
+          element={
+            <PostPage
+              posts={posts}
+              handleDelete={handleDelete}
+            />
+          }
+        />
+        <Route
+          exact
+          path="/edit/:id"
+          element={
+            <EditPost
+              posts={posts}
+              editTitle={editTitle}
+              setEditTitle={setEditTitle}
+              editBody={editBody}
+              setEditBody={setEditBody}
+              handleEdit={handleEdit}
+            />
+          }
         />
         <Route exact path="/about" Component={About} />
         <Route path="*" Component={Missing} />
