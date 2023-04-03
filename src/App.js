@@ -52,7 +52,7 @@ const App = () => {
         post.body.toLowerCase().includes(search.toLowerCase()) ||
         post.title.toLowerCase().includes(search.toLowerCase())
     );
-    setSearchResults(filteredResults);
+    setSearchResults(filteredResults.reverse());
   }, [posts, search]);
 
   const handleDelete = (id) => {
@@ -71,8 +71,8 @@ const App = () => {
       body: postBody,
     };
     setPosts([...posts, newPost]);
-    setPostTitle(""); 
-    setPostBody(""); 
+    setPostTitle("");
+    setPostBody("");
     navigate("/");
   };
 
