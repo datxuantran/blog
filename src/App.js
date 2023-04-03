@@ -67,7 +67,7 @@ const App = () => {
         body: editBody,
       };
 
-      setPosts([...posts.filter(post => post.id !== id), editedPost]);
+      setPosts([...posts.filter((post) => post.id !== id), editedPost]);
       setEditTitle("");
       setEditBody("");
       navigate("/");
@@ -159,12 +159,7 @@ const App = () => {
         <Route
           exact
           path="/post/:id"
-          element={
-            <PostPage
-              posts={posts}
-              handleDelete={handleDelete}
-            />
-          }
+          element={<PostPage posts={posts} handleDelete={handleDelete} />}
         />
         <Route
           exact
