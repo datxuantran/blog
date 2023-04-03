@@ -5,7 +5,7 @@ const Home = ({ posts }) => {
   return (
     <main className="home">
       {posts.length ? (
-        posts.map((post) => <Post post={post} />)
+        posts.map((post) => <Post key={post.id} post={post} />)
       ) : (
         <p>No posts to display.</p>
       )}

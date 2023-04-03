@@ -1,10 +1,9 @@
-import React from 'react'
-
 const About = () => {
   return (
-    <main>
-        <h1>About</h1>
-    </main>
+      <main className='about'>
+          <h2>About</h2>
+          <p>This blog app belongs to no one.</p>
+      </main>
   )
 }
 
